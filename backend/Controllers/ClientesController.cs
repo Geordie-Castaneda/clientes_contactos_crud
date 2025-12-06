@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ClientesAPI.Data;
 using ClientesAPI.Models;
+using System.Diagnostics;
 
 namespace ClientesAPI.Controllers
 {
@@ -20,20 +21,30 @@ namespace ClientesAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Cliente>>> GetClientes()
         {
-            return await _context.Clientes.Include(c => c.Contactos).ToListAsync();
+            var clientes = await _context.Clientes.Include(c => c.Contactos).ToListAsync();
+            Debug.WriteLine($"Total clientes: {clientes.Count}");
+            foreach (var c in clientes)
+            {
+                Debug.WriteLine($"Cliente {c.Id} tiene {c.Contactos?.Count ?? 0} contactos");
+            }
+            return clientes;
         }
 
         // GET: api/Clientes/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Cliente>> GetCliente(int id)
         {
-            var cliente = await _context.Clientes.Include(c => c.Contactos)
+            var cliente = await _context.Clientes
+                .Include(c => c.Contactos)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (cliente == null)
             {
                 return NotFound();
             }
+
+            Debug.WriteLine($"Cliente ID {id} encontrado");
+            Debug.WriteLine($"Contactos: {cliente.Contactos?.Count ?? 0}");
 
             return cliente;
         }
@@ -51,6 +62,9 @@ namespace ClientesAPI.Controllers
                 return NotFound();
             }
 
+            Debug.WriteLine($"Actualizando cliente ID {id}");
+            Debug.WriteLine($"Contactos recibidos: {clienteDTO.Contactos?.Count ?? 0}");
+
             // Actualizar propiedades del cliente
             clienteExistente.Nombre = clienteDTO.Nombre;
             clienteExistente.Direccion = clienteDTO.Direccion;
@@ -62,17 +76,20 @@ namespace ClientesAPI.Controllers
             // Limpiar contactos existentes y agregar nuevos
             clienteExistente.Contactos.Clear();
             
-            foreach (var contactoDTO in clienteDTO.Contactos)
+            if (clienteDTO.Contactos != null)
             {
-                var contacto = new Contacto
+                foreach (var contactoDTO in clienteDTO.Contactos)
                 {
-                    Nombre = contactoDTO.Nombre,
-                    Email = contactoDTO.Email,
-                    Telefono = contactoDTO.Telefono,
-                    Puesto = contactoDTO.Puesto,
-                    ClienteId = id
-                };
-                clienteExistente.Contactos.Add(contacto);
+                    var contacto = new Contacto
+                    {
+                        Nombre = contactoDTO.Nombre,
+                        Email = contactoDTO.Email,
+                        Telefono = contactoDTO.Telefono,
+                        Puesto = contactoDTO.Puesto,
+                        ClienteId = id
+                    };
+                    clienteExistente.Contactos.Add(contacto);
+                }
             }
 
             try
@@ -98,6 +115,9 @@ namespace ClientesAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Cliente>> PostCliente(ClienteWithContactosDTO clienteDTO)
         {
+            Debug.WriteLine($"Creando nuevo cliente: {clienteDTO.Nombre}");
+            Debug.WriteLine($"Contactos a agregar: {clienteDTO.Contactos?.Count ?? 0}");
+
             var cliente = new Cliente
             {
                 Nombre = clienteDTO.Nombre,
@@ -110,21 +130,34 @@ namespace ClientesAPI.Controllers
             };
 
             // Agregar contactos
-            foreach (var contactoDTO in clienteDTO.Contactos)
+            if (clienteDTO.Contactos != null)
             {
-                cliente.Contactos.Add(new Contacto
+                foreach (var contactoDTO in clienteDTO.Contactos)
                 {
-                    Nombre = contactoDTO.Nombre,
-                    Email = contactoDTO.Email,
-                    Telefono = contactoDTO.Telefono,
-                    Puesto = contactoDTO.Puesto
-                });
+                    var contacto = new Contacto
+                    {
+                        Nombre = contactoDTO.Nombre,
+                        Email = contactoDTO.Email,
+                        Telefono = contactoDTO.Telefono,
+                        Puesto = contactoDTO.Puesto
+                    };
+                    Debug.WriteLine($"Agregando contacto: {contacto.Nombre}");
+                    cliente.Contactos.Add(contacto);
+                }
             }
 
             _context.Clientes.Add(cliente);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCliente", new { id = cliente.Id }, cliente);
+            // Recargar con contactos para devolver
+            var clienteConContactos = await _context.Clientes
+                .Include(c => c.Contactos)
+                .FirstOrDefaultAsync(c => c.Id == cliente.Id);
+
+            Debug.WriteLine($"Cliente creado ID: {cliente.Id}");
+            Debug.WriteLine($"Contactos guardados: {clienteConContactos?.Contactos?.Count ?? 0}");
+
+            return CreatedAtAction("GetCliente", new { id = cliente.Id }, clienteConContactos);
         }
 
         // DELETE: api/Clientes/5

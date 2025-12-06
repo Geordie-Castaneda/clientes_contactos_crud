@@ -33,7 +33,7 @@ namespace ClientesAPI.Models
         public string Email { get; set; } = "";
 
         // Un cliente puede tener varios contactos
-        [JsonIgnore]
+        // [JsonIgnore]
         public List<Contacto> Contactos { get; set; } = new List<Contacto>();
     }
 }
