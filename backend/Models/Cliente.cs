@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace ClientesAPI.Models
 {
@@ -32,6 +33,7 @@ namespace ClientesAPI.Models
         public string Email { get; set; } = "";
 
         // Un cliente puede tener varios contactos
+        [JsonIgnore]
         public List<Contacto> Contactos { get; set; } = new List<Contacto>();
     }
 }

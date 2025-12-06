@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace ClientesAPI.Models
 {
@@ -22,6 +23,8 @@ namespace ClientesAPI.Models
 
         // Relación con Cliente
         public int ClienteId { get; set; }
+        
+        [JsonIgnore]
         public Cliente Cliente { get; set; } = null!;
     }
 }

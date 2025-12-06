@@ -40,14 +40,40 @@ namespace ClientesAPI.Controllers
 
         // PUT: api/Clientes/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCliente(int id, Cliente cliente)
+        public async Task<IActionResult> PutCliente(int id, ClienteWithContactosDTO clienteDTO)
         {
-            if (id != cliente.Id)
+            var clienteExistente = await _context.Clientes
+                .Include(c => c.Contactos)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (clienteExistente == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(cliente).State = EntityState.Modified;
+            // Actualizar propiedades del cliente
+            clienteExistente.Nombre = clienteDTO.Nombre;
+            clienteExistente.Direccion = clienteDTO.Direccion;
+            clienteExistente.Pais = clienteDTO.Pais;
+            clienteExistente.Identificador = clienteDTO.Identificador;
+            clienteExistente.Telefono = clienteDTO.Telefono;
+            clienteExistente.Email = clienteDTO.Email;
+
+            // Limpiar contactos existentes y agregar nuevos
+            clienteExistente.Contactos.Clear();
+            
+            foreach (var contactoDTO in clienteDTO.Contactos)
+            {
+                var contacto = new Contacto
+                {
+                    Nombre = contactoDTO.Nombre,
+                    Email = contactoDTO.Email,
+                    Telefono = contactoDTO.Telefono,
+                    Puesto = contactoDTO.Puesto,
+                    ClienteId = id
+                };
+                clienteExistente.Contactos.Add(contacto);
+            }
 
             try
             {
@@ -70,9 +96,31 @@ namespace ClientesAPI.Controllers
 
         // POST: api/Clientes
         [HttpPost]
-        public async Task<ActionResult<Cliente>> PostCliente(Cliente cliente)
+        public async Task<ActionResult<Cliente>> PostCliente(ClienteWithContactosDTO clienteDTO)
         {
-            cliente.FechaCreacion = DateTime.Now;
+            var cliente = new Cliente
+            {
+                Nombre = clienteDTO.Nombre,
+                Direccion = clienteDTO.Direccion,
+                Pais = clienteDTO.Pais,
+                Identificador = clienteDTO.Identificador,
+                FechaCreacion = DateTime.Now,
+                Telefono = clienteDTO.Telefono,
+                Email = clienteDTO.Email
+            };
+
+            // Agregar contactos
+            foreach (var contactoDTO in clienteDTO.Contactos)
+            {
+                cliente.Contactos.Add(new Contacto
+                {
+                    Nombre = contactoDTO.Nombre,
+                    Email = contactoDTO.Email,
+                    Telefono = contactoDTO.Telefono,
+                    Puesto = contactoDTO.Puesto
+                });
+            }
+
             _context.Clientes.Add(cliente);
             await _context.SaveChangesAsync();
 
@@ -83,7 +131,9 @@ namespace ClientesAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCliente(int id)
         {
-            var cliente = await _context.Clientes.FindAsync(id);
+            var cliente = await _context.Clientes.Include(c => c.Contactos)
+                .FirstOrDefaultAsync(c => c.Id == id);
+                
             if (cliente == null)
             {
                 return NotFound();

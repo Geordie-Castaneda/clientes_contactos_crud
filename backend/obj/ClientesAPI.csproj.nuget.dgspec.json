@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\jordy\\OneDrive\\Desktop\\clientes_contactos_crud\\backend\\ClientesAPI.csproj": {}
+    "C:\\Users\\jordy\\clientes_contactos_crud\\backend\\ClientesAPI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\jordy\\OneDrive\\Desktop\\clientes_contactos_crud\\backend\\ClientesAPI.csproj": {
+    "C:\\Users\\jordy\\clientes_contactos_crud\\backend\\ClientesAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\jordy\\OneDrive\\Desktop\\clientes_contactos_crud\\backend\\ClientesAPI.csproj",
+        "projectUniqueName": "C:\\Users\\jordy\\clientes_contactos_crud\\backend\\ClientesAPI.csproj",
         "projectName": "ClientesAPI",
-        "projectPath": "C:\\Users\\jordy\\OneDrive\\Desktop\\clientes_contactos_crud\\backend\\ClientesAPI.csproj",
+        "projectPath": "C:\\Users\\jordy\\clientes_contactos_crud\\backend\\ClientesAPI.csproj",
         "packagesPath": "C:\\Users\\jordy\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\jordy\\OneDrive\\Desktop\\clientes_contactos_crud\\backend\\obj\\",
+        "outputPath": "C:\\Users\\jordy\\clientes_contactos_crud\\backend\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\jordy\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -54,6 +54,10 @@
             "Microsoft.EntityFrameworkCore.Design": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.11, )"
+            },
+            "Microsoft.EntityFrameworkCore.InMemory": {
               "target": "Package",
               "version": "[8.0.11, )"
             },
